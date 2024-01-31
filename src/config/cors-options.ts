@@ -1,9 +1,9 @@
 export const corsOptions = {
   origin: [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3002",
-    "http://localhost:3003",
+    process.env.FRONTEND_URL_1,
+    process.env.FRONTEND_URL_2,
+    process.env.FRONTEND_URL_3,
+    process.env.FRONTEND_URL_4,
   ],
   optionsSucessStatus: 200,
   credentials: true,

@@ -17,7 +17,16 @@ class App {
   constructor() {
     this.app = express();
     this.http = new http.Server(this.app);
-    this.io = new Server(this.http);
+    this.io = new Server(this.http, {
+      cors: {
+        origin: [
+          process.env.FRONTEND_URL_1!,
+          process.env.FRONTEND_URL_2!,
+          process.env.FRONTEND_URL_3!,
+          process.env.FRONTEND_URL_4!,
+        ],
+      },
+    });
     dotenv.config();
 
     this.middlewaresInitialize();
@@ -39,18 +48,21 @@ class App {
   private socketEvents(socket: Socket) {
     console.log("socket connected: " + socket.id);
     socket.on("subscribe", (data) => {
+      console.log("usuario inserido na sala:" + data.roomId);
       socket.join(data.roomId);
 
-      socket.broadcast.to(data.roomId).emit("chat", {
-        message: data.message,
-        username: data.username,
-        time: data.time,
+      socket.on("chat", (data) => {
+        socket.broadcast.to(data.roomId).emit("chat", {
+          message: data.message,
+          username: data.username,
+          time: data.time,
+        });
       });
     });
   }
 
   public listen() {
-    this.app.listen(process.env.PORT, () => {
+    this.http.listen(process.env.PORT, () => {
       console.log(`Running on port ${process.env.PORT}`);
     });
   }
