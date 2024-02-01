@@ -5,8 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "prisma generate && tsup src",
+    "postinstall": "prisma generate",
     "start": "tsx src/server.ts",
     "dev": "tsx watch src/server.ts"
+  },
+  "engines": {
+    "node": ">=18 <19"
   },
   "prisma": {
     "seed": "ts-node src/seed.ts"
