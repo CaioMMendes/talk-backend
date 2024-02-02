@@ -5,6 +5,7 @@ import { corsOptions } from "./config/cors-options";
 import { testeRouter } from "./routes/teste-route";
 import http from "http";
 import { Server, Socket } from "socket.io";
+import { roomRouter } from "./routes/room-route";
 
 // dotenv.config();
 
@@ -13,6 +14,7 @@ class App {
   private http: http.Server;
   private io: Server;
   private testeRouter = testeRouter;
+  private roomRouter = roomRouter;
 
   constructor() {
     this.app = express();
@@ -28,7 +30,7 @@ class App {
       },
     });
     dotenv.config();
-
+    this.initializeCors();
     this.middlewaresInitialize();
     this.initializeRoutes();
   }
@@ -39,6 +41,10 @@ class App {
   }
   private initializeRoutes() {
     this.app.use("/api/v1", this.testeRouter);
+    this.app.use("/api/v1", this.roomRouter);
+  }
+  private initializeCors() {
+    this.app.use(cors(corsOptions));
   }
 
   public listenSocket() {
@@ -50,13 +56,30 @@ class App {
     socket.on("subscribe", (data) => {
       console.log("usuario inserido na sala:" + data.roomId);
       socket.join(data.roomId);
+      socket.join(data.socketId);
 
-      socket.on("chat", (data) => {
-        socket.broadcast.to(data.roomId).emit("chat", {
-          message: data.message,
+      const roomSession = Array.from(socket.rooms);
+
+      if (roomSession.length > 1) {
+        socket.to(data.roomId).emit("new user", {
+          socketId: socket.id,
           username: data.username,
-          time: data.time,
         });
+      }
+    });
+
+    socket.on("chat", (data) => {
+      socket.broadcast.to(data.roomId).emit("chat", {
+        message: data.message,
+        username: data.username,
+        time: data.time,
+      });
+    });
+
+    socket.on("newUserStart", (data) => {
+      console.log("Novo usuario chegou");
+      socket.to(data.to).emit("newUserStart", {
+        sender: data.sender,
       });
     });
   }
@@ -68,7 +91,7 @@ class App {
   }
 }
 
-const app = new App();
+// const app = new App();
 
 // app.use(cors(corsOptions));
 // app.use(express.json());
