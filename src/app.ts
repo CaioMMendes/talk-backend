@@ -61,7 +61,7 @@ class App {
       const roomSession = Array.from(socket.rooms);
 
       if (roomSession.length > 1) {
-        socket.to(data.roomId).emit("new user", {
+        socket.to(data.roomId).emit("newUser", {
           socketId: socket.id,
           username: data.username,
         });
@@ -80,6 +80,23 @@ class App {
       console.log("Novo usuario chegou");
       socket.to(data.to).emit("newUserStart", {
         sender: data.sender,
+      });
+    });
+
+    socket.on("sdp", (data) => {
+      socket.to(data.to).emit("sdp", {
+        description: data.description,
+        sender: data.sender,
+        username: data.username,
+      });
+    });
+
+    socket.on("iceCandidates", (data) => {
+      console.log("ice", data);
+      socket.to(data.to).emit("iceCandidates", {
+        candidate: data.candidate,
+        sender: data.sender,
+        username: data.username,
       });
     });
   }
