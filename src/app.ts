@@ -99,6 +99,11 @@ class App {
         username: data.username,
       });
     });
+
+    socket.on("disconnect", () => {
+      console.log("Socket desconectado", socket.id);
+      socket.disconnect();
+    });
   }
 
   public listen() {
